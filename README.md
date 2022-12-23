@@ -1,6 +1,7 @@
 # air-hockey-game
 
-OverView
+Overview
+
 Remake an air hockey game using canvas. 
 - Controlling user's mallet via mouse 
 - Keeps track of the score (player1 vs AI)
