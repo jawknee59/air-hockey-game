@@ -5,6 +5,7 @@ Overview
 Remake an air hockey game using canvas. 
 - Controlling user's mallet via mouse 
 - Keeps track of the score (player1 vs AI)
+- First one to five points, declares winner
 
 Technologies Used
 - HTML
