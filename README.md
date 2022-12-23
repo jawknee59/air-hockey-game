@@ -3,15 +3,23 @@
 Overview
 
 Remake an air hockey game using canvas. 
-- Controlling user's mallet via mouse 
-- Keeps track of the score (player1 vs AI)
-- First one to five points, declares winner
 
 Technologies Used
 - HTML
 - CSS
 - JavaScript
 - Canvas
+
+User Stories
+As a user, I want the ability to:
+- Click the 'start' button to enable the game
+- Click the 'rules' button to see the rules of the game
+- Move the mallet around using the mouse
+- Moving the mallet and not passing the middle of rink boundry
+- Able to hit the puck with the mallet
+- See points being tracked on the scoreboard when someone scores
+- Click the 'pause' button to pause the game
+- See who the winner is, for whoever scores 5 points first
 
 Wireframes
 
