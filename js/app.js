@@ -10,8 +10,8 @@
 // First one to five goals win the game
 //////////////////// END RULES ////////////////////
 
-//////////////////// INITIAL SETUP ////////////////////
 
+//////////////////// INITIAL SETUP ////////////////////
 // first grab our HTML elements for easy reference later
 const game = document.getElementById('canvas')
 // setting the game's context to 2d
@@ -19,118 +19,160 @@ const game = document.getElementById('canvas')
 // this is how we will tell code to work within the context of the canvas
 const ctx = game.getContext('2d')
 // setting the game's canvas for the rink
-game.width = 500
-game.height = 700
+game.width = 520
+game.height = 660
 
 
-//////////////////// MALLET CLASS ////////////////////
-// creating a mallet class for computer and player
-class Element {
+//////////////////// CLASSES TO DRAW SHAPES IN CANVAS ////////////////////
+class Rect {
     constructor(x, y, width, height, color) {
         this.x = x
-        this.y = y
+        this.y = y 
         this.width = width
         this.height = height
         this.color = color
-        this.speed = 1
-        this.gravity = 1
         this.render = function () {
-            ctx.fillStyle = this.color
-            ctx.fillRect(this.x, this.y, this.width, this.height)
+            ctx.beginPath()
+            ctx.lineWidth = 4
+            ctx.strokeStyle = this.color
+            ctx.strokeRect(this.x, this.y, this.width, this.height)
+            ctx.closePath()
         }
     }
 }
 
-const computerMallet = new Element(250, 100, 50, 50, 'red')
-const playerMallet = new Element(250, game.height-100, 50, 50, 'blue')
-const puck = new Element(game.width/2, game.height/2, 25, 25, 'black')
+class Circle {
+    constructor (x, y, radius, color) {
+        this.x = x
+        this.y = y
+        this.radius = radius
+        this.color = color
+        this.render = function () {
+            ctx.beginPath()
+            ctx.lineWidth = 4
+            ctx.strokeStyle = this.color
+            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false)
+            ctx.stroke()
+            ctx.closePath()
+        }
+    }
+}
 
-//////////////////// RENDER MALLET & PUCK HERE ////////////////////
-const renderElements = () => {
-    ctx.clearRect(0, 0, game.width, game.height)
-    computerMallet.render()
-    playerMallet.render()
+class Line {
+    constructor(x1,y1,x2,y2, color) {
+        this.x1 = x1
+        this.y1 = y1
+        this.x2 = x2
+        this.y2 = y2
+        this.color = color
+        this.render = function() {
+            ctx.beginPath()
+            ctx.strokeStyle = this.color
+            ctx.moveTo(this.x1, this.y1)
+            ctx.lineTo(this.x2, this.y2)
+            ctx.stroke()
+            ctx.closePath()
+        }
+    }
+}
+
+class Score {
+    constructor(text, x, y, color) {
+        this.text = text
+        this.x = x 
+        this.y = y
+        this.color = color
+        this.render = function () {
+            ctx.font = '50px Impact'
+            ctx.lineWidth = 2
+            ctx.strokeStyle = this.color
+            // displays text on canvas
+            ctx.strokeText(this.text, this.x, this.y)
+        }
+    }
+}
+
+//////////////////// DRAWING THE ICE RINK ////////////////////
+const iceRink = new Rect(30, 30, 460, 600, 'blue')
+const centerCircle = new Circle(game.width/2,game.height/2,40,'red')
+const centerRing = new Circle(game.width/2, game.height/2,5,'red')
+const centerLine1 = new Line(32,330,220,330,'red')
+const centerLine2 = new Line(300,330,488,330,'red')
+const compGoal = new Rect(160, 30, 200, 50, 'red')
+const userGoal = new Rect(160, 580, 200, 50, 'red')
+const compScore = new Score('0', 450, 300, 'red')
+const userScore = new Score('0', 450, 400, 'blue')
+
+const renderRink = () => {
+    iceRink.render()
+    centerCircle.render()
+    centerRing.render()
+    centerLine1.render()
+    centerLine2.render()
+    compGoal.render()
+    userGoal.render()
+    compScore.render()
+    userScore.render()
+}
+
+//////////////////// MALLETS/PUCK CLASS ////////////////////
+class GameElement {
+    constructor(x, y, radius, color1, color2) {
+        this.x = x
+        this.y = y
+        this.radius = radius
+        this.color1 = color1
+        this.color2 = color2
+        this.render = function () {
+            ctx.beginPath()
+            ctx.lineWidth = 4
+            ctx.fillStyle = this.color1
+            ctx.strokeStyle = this.color2
+            // draws a circle on canvas
+            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false)
+            ctx.fill()
+            ctx.stroke()
+            ctx.closePath()
+        }
+    }
+}
+
+const compMallet = new GameElement(260, 150, 30, 'red', 'black')
+const userMallet = new GameElement(260, game.height - 150, 30, 'blue', 'black')
+const puck = new GameElement(game.width/2,game.height/2,15,'green','black')
+
+const renderGameElements = () => {
+    compMallet.render()
+    userMallet.render()
     puck.render()
 }
 
-//////////////////// PUCK BOUNCE FUNCTION ////////////////////
-const puckBounce = () => {
-    if (puck.y + puck.gravity <= 0 || puck.y + puck.gravity >= game.height) {
-        puck.gravity = puck.gravity * -1
-        puck.y += puck.gravity
-        puck.x += puck.speed
-    } else {
-        puck.y += puck.gravity
-        puck.x += puck.speed
-    }
-    puckWallCollision()
-}
 
-//////////////////// PUCK-WALL COLLISION FUNCTION ////////////////////
-const puckWallCollision = () => {
-    // if (puck.x + puck.speed <= 0 || puck.x + puck.speed + puck.width >= game.width) {
-    //     puck.y += puck.gravity
-    //     puck.speed = puck.speed * -1
-    //     puck.x += puck.speed
-    // } else {
-    //     puck.y += puck.gravity
-    //     puck.x += puck.speed
-    // }
 
-    if (
-        (puck.y + puck.gravity <= computerMallet.y + computerMallet.height &&
-        puck.x + puck.width + puck.speed >= computerMallet.x &&
-        puck.y + puck.gravity > computerMallet.y) ||
-        (puck.y + puck.gravity > playerMallet.y &&
-        puck.x + puck.speed <= playerMallet.x + playerMallet.width)
-    ) {
-        puck.speed = puck.speed * -1
-    } else if (puck.x + puck.speed < playerMallet.x){
-        //scoreTwo += 1
-        puck.speed = puck.speed * -1
-        puck.x = 100 + puck.speed
-        puck.y += puck.gravity
+//////////////////// EVENT LISTENER ////////////////////
+///// TO CONTROL USER'S MALLET WITH MOUSE /////
 
-    } else if (puck.x + puck.speed > computerMallet.x + computerMallet.width){
-        //scoreOne += 1
-        puck.speed = puck.speed * -1
-        puck.x = 100 + puck.speed
-        puck.y += puck.gravity
-
-    }
-    renderElements()
-}
-
-//////////////////// EVENT LISTENERS ////////////////////
-// control player's mallet w/ mouse event
 document.addEventListener('mousemove', (e) => {
-    // creating variable to have cursor's movement in the center of the mallet
-    const relativeX = e.clientX - game.offsetLeft-25
-    const relativeY = e.clientY - game.offsetTop-25
-    
-    
-    // Creating boundary so playerMallet does not go off screen
-    // playerMallet's (x,y) coordinates adjusting according to cursor placement
-    if(relativeX > 0 && relativeX < game.width - 50) {
-        playerMallet.x = relativeX
+    var relativeX = e.clientX - game.offsetLeft;
+    var relativeY = e.clientY - game.offsetTop;
+    // setting 'X' boundaries for user's mallet to not go out of the rink
+    if(relativeX > 60 && relativeX < game.width - 60) {
+        userMallet.x = relativeX;
     }
-    if(relativeY > 0 && relativeY < game.height - 50){
-        playerMallet.y = relativeY
-    }
-    // // For playerMallet to not cross the half-way point of game
-    // if(relativeY > game.height/2 && relativeY < game.height - 50){
-    //     playerMallet.y = relativeY
-    // }
-    
+    // setting 'Y' boundaries for user's mallet to not go out of the rink
+    if(relativeY > 60 && relativeY < game.height - 60){
+        userMallet.y = relativeY;
+    }    
 })
 
 //////////////////// GAME LOOP ////////////////////
+
 const gameLoop = () => {
-    //renderElements()
-    puckBounce()
+    ctx.clearRect(0, 0, game.width, game.height)    
+    renderRink()
+    renderGameElements()
     
 }
-
 
 // this interval runs the game loop every 10ms until we tell it to stop
 const gameInterval = setInterval(gameLoop, 10)
@@ -141,4 +183,6 @@ document.addEventListener('DOMContentLoaded', function () {
     // here is our gameLoop interval
     gameInterval
 })
+
+
 
