@@ -103,6 +103,8 @@ const userGoal = new Rect(160, 580, 200, 50, 'red')
 const compScore = new Score('0', 450, 300, 'red')
 const userScore = new Score('0', 450, 400, 'blue')
 
+
+// rendering the ice rink onto canvas
 const renderRink = () => {
     iceRink.render()
     centerCircle.render()
@@ -137,14 +139,34 @@ class GameElement {
     }
 }
 
+// calling the object to create user/comp's mallet and puck
 const compMallet = new GameElement(260, 150, 30, 'red', 'black')
 const userMallet = new GameElement(260, game.height - 150, 30, 'blue', 'black')
 const puck = new GameElement(game.width/2,game.height/2,15,'green','black')
 
+// function to render user/comp's mallet and puck
 const renderGameElements = () => {
     compMallet.render()
     userMallet.render()
     puck.render()
+}
+
+//////////////////// DETECT COLLISION FROM MALLET TO PUCK ////////////////////
+// Distance Formula from 2 points 
+const getDistance = (x1,y1,x2,y2) => {
+    const distance = Math.sqrt(
+        (x2 - x1) * (x2 - x1) +
+        (y2 - y1) * (y2 - y1)
+    )
+    return distance
+}
+
+const hitPuck = (mallet) => {
+    // if statement to detect if any of the mallets hit the puck
+    // getDistance < 45 for mallet to hit puck 
+    if(getDistance(mallet.x, mallet.y, puck.x, puck.y) < 45) {
+        //console.log('HIT DETECTED!')
+    }
 }
 
 
@@ -165,12 +187,30 @@ document.addEventListener('mousemove', (e) => {
     }    
 })
 
+
+////////////////////// TESTING BOUNDARIES FOR PUCK UTILIZING EVENT LISTENER MOUSEMOVE ////////// 
+/*
+document.addEventListener('mousemove', (e) => {
+    var relativeX = e.clientX - game.offsetLeft;
+    var relativeY = e.clientY - game.offsetTop;
+    // setting 'X' boundaries for user's mallet to not go out of the rink
+    if(relativeX > 40 && relativeX < game.width - 40) {
+        puck.x = relativeX;
+    }
+    // setting 'Y' boundaries for user's mallet to not go out of the rink
+    if(relativeY > 40 && relativeY < game.height - 40){
+        puck.y = relativeY;
+    }    
+})
+*/
 //////////////////// GAME LOOP ////////////////////
 
 const gameLoop = () => {
     ctx.clearRect(0, 0, game.width, game.height)    
     renderRink()
     renderGameElements()
+    hitPuck(userMallet)
+    hitPuck(compMallet)
     
 }
 
