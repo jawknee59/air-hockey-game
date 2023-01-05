@@ -22,6 +22,12 @@ const ctx = game.getContext('2d')
 game.width = 520
 game.height = 660
 
+let puckSpeed = 5
+let xSpeed = 0
+let ySpeed = 0
+let compScore = 0
+let userScore = 0
+
 
 //////////////////// CLASSES TO DRAW SHAPES IN CANVAS ////////////////////
 class Rect {
@@ -76,21 +82,6 @@ class Line {
     }
 }
 
-class Score {
-    constructor(text, x, y, color) {
-        this.text = text
-        this.x = x 
-        this.y = y
-        this.color = color
-        this.render = function () {
-            ctx.font = '50px Impact'
-            ctx.lineWidth = 2
-            ctx.strokeStyle = this.color
-            // displays text on canvas
-            ctx.strokeText(this.text, this.x, this.y)
-        }
-    }
-}
 
 //////////////////// DRAWING THE ICE RINK ////////////////////
 const iceRink = new Rect(30, 30, 460, 600, 'blue')
@@ -100,9 +91,7 @@ const centerLine1 = new Line(32,330,220,330,'red')
 const centerLine2 = new Line(300,330,488,330,'red')
 const compGoal = new Rect(160, 30, 200, 50, 'red')
 const userGoal = new Rect(160, 580, 200, 50, 'red')
-const compScore = new Score('0', 450, 300, 'red')
-const userScore = new Score('0', 450, 400, 'blue')
-
+    
 
 // rendering the ice rink onto canvas
 const renderRink = () => {
@@ -113,8 +102,13 @@ const renderRink = () => {
     centerLine2.render()
     compGoal.render()
     userGoal.render()
-    compScore.render()
-    userScore.render()
+
+    ctx.font = "50px Impact";
+    ctx.lineWidth = 2
+    ctx.strokeStyle = 'red'
+    ctx.strokeText(compScore,450,300);
+    ctx.strokeStyle = 'blue'
+    ctx.strokeText(userScore,450,400);
 }
 
 //////////////////// MALLETS/PUCK CLASS ////////////////////
@@ -151,7 +145,7 @@ const renderGameElements = () => {
     puck.render()
 }
 
-//////////////////// DETECT COLLISION FROM MALLET TO PUCK ////////////////////
+//////////////////// FUNCTION DETECT COLLISION FROM MALLET TO PUCK ////////////////////
 // Distance Formula from 2 points 
 const getDistance = (x1,y1,x2,y2) => {
     const distance = Math.sqrt(
@@ -166,10 +160,51 @@ const hitPuck = (mallet) => {
     // getDistance < 45 for mallet to hit puck 
     if(getDistance(mallet.x, mallet.y, puck.x, puck.y) < 45) {
         //console.log('HIT DETECTED!')
-    }
+        let dx = puck.x - mallet.x
+        let dy = puck.y - mallet.y
+        dx = dx / 45
+        dy = dy / 45
+        xSpeed = dx * puckSpeed
+        ySpeed = dy * puckSpeed
+    } 
+    puck.x = puck.x + xSpeed
+    puck.y = puck.y + ySpeed
+    xSpeed = xSpeed * 0.99
+    xSpeed = xSpeed * 0.99
 }
 
+//////////////////// FUNCTION FOR PUCK BOUNCING OFF THE WALLS ////////////////////
+//////////////////// FUNCTION TO KEEP TRACK OF SCORE////////////////////
+const puckBounce = () => {
+    // 'X' Boundaries
+    if(puck.x + xSpeed > game.width-puck.radius-30 || 
+        puck.x + xSpeed < puck.radius + 30) {
+        xSpeed *= -1;
+    }
 
+    // Keeping track of scores an resetting puck's position to the middle
+    // 'Y' Boundaries
+    if(puck.x > 175 && puck.x < 345){
+        if(puck.y + ySpeed > game.height+puck.radius-30) {
+            puck.x = game.width/2
+            puck.y = game.height/2
+            xSpeed = 0
+            ySpeed = 0 
+            compScore = compScore + 1
+        } else if(puck.y + ySpeed < 30-puck.radius ) {
+            puck.x = game.width/2
+            puck.y = game.height/2
+            xSpeed = 0
+            ySpeed = 0
+            userScore = userScore + 1
+        }
+    } else {
+    if(puck.y + ySpeed > game.height-puck.radius-30  || 
+        puck.y + ySpeed  < 30+puck.radius) {
+        ySpeed *= -1
+        } 
+    } 
+}
 
 //////////////////// EVENT LISTENER ////////////////////
 ///// TO CONTROL USER'S MALLET WITH MOUSE /////
@@ -189,20 +224,20 @@ document.addEventListener('mousemove', (e) => {
 
 
 ////////////////////// TESTING BOUNDARIES FOR PUCK UTILIZING EVENT LISTENER MOUSEMOVE ////////// 
-/*
-document.addEventListener('mousemove', (e) => {
-    var relativeX = e.clientX - game.offsetLeft;
-    var relativeY = e.clientY - game.offsetTop;
-    // setting 'X' boundaries for user's mallet to not go out of the rink
-    if(relativeX > 40 && relativeX < game.width - 40) {
-        puck.x = relativeX;
-    }
-    // setting 'Y' boundaries for user's mallet to not go out of the rink
-    if(relativeY > 40 && relativeY < game.height - 40){
-        puck.y = relativeY;
-    }    
-})
-*/
+
+// document.addEventListener('mousemove', (e) => {
+//     var relativeX = e.clientX - game.offsetLeft;
+//     var relativeY = e.clientY - game.offsetTop;
+//     // setting 'X' boundaries for user's mallet to not go out of the rink
+//     if(relativeX > 40 && relativeX < game.width - 40) {
+//         puck.x = relativeX;
+//     }
+//     // setting 'Y' boundaries for user's mallet to not go out of the rink
+//     if(relativeY > 40 && relativeY < game.height - 40){
+//         puck.y = relativeY;
+//     }    
+// })
+
 //////////////////// GAME LOOP ////////////////////
 
 const gameLoop = () => {
@@ -211,7 +246,7 @@ const gameLoop = () => {
     renderGameElements()
     hitPuck(userMallet)
     hitPuck(compMallet)
-    
+    puckBounce()
 }
 
 // this interval runs the game loop every 10ms until we tell it to stop
